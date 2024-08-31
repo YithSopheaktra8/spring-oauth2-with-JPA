@@ -9,7 +9,6 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
@@ -18,6 +17,11 @@ import org.springframework.security.oauth2.server.authorization.settings.Authori
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -42,13 +46,14 @@ public class SecurityConfig {
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(httpSecurity);
 
         httpSecurity.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
-                .oidc(Customizer.withDefaults()); // GET ID TOKEN AND ACCESS TOKEN
+                .oidc(Customizer.withDefaults());
 
-        httpSecurity.exceptionHandling(c ->
-                c.defaultAuthenticationEntryPointFor(
-                        new LoginUrlAuthenticationEntryPoint("/login"),
-                        new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
-                ));
+        httpSecurity
+                .exceptionHandling(c ->
+                        c.defaultAuthenticationEntryPointFor(
+                                new LoginUrlAuthenticationEntryPoint("/login"),
+                                new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
+                        ));
 
         return httpSecurity.build();
     }
@@ -58,6 +63,8 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
         httpSecurity.authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/v1/test/public").permitAll()
+                .requestMatchers("http://localhost:8080/login").permitAll()
                 .anyRequest().authenticated()
         );
 
@@ -70,8 +77,6 @@ public class SecurityConfig {
         httpSecurity.csrf(token -> token.disable());
 //
 //        // change from statefull to stateless because api use stateless
-//        httpSecurity.sessionManagement(session -> session
-//                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return httpSecurity.build();
     }
@@ -82,5 +87,6 @@ public class SecurityConfig {
                 .issuer("http://localhost:8080")
                 .build();
     }
+
 
 }

@@ -35,7 +35,7 @@ public class ClientInit {
 
 
         ClientSettings clientSettings = ClientSettings.builder()
-//                .requireProofKey(true)
+                .requireProofKey(true)
                 .requireAuthorizationConsent(true)
                 .build();
 
@@ -43,9 +43,11 @@ public class ClientInit {
                 .clientId("mobile")
                 .clientSecret(passwordEncoder.encode("password"))
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-                .redirectUri("http://www.istad.co/login/oauth2/code/mobile")
+                .authorizationGrantTypes(grantTypes -> {
+                    grantTypes.add(AuthorizationGrantType.AUTHORIZATION_CODE);
+                    grantTypes.add(AuthorizationGrantType.REFRESH_TOKEN);
+                })
+                .redirectUri("http://localhost:3000/api/auth/callback")
                 //.postLogoutRedirectUri("http://127.0.0.1:8080/login")
                 .scopes(scope -> {
                     scope.add(OidcScopes.OPENID);
